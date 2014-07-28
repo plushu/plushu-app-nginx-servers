@@ -1,4 +1,3 @@
-plushu-nginx-vhost
-==================
+# plushu-nginx-app-vhosts
 
-Plugin to setup and run an Nginx instance as a virtual host interface for locally-running App Containers
+Plugin to create virtual host interfaces for locally-running App Containers
