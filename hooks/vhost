@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $PLUSHU_TRACE ]] && set -x
+
+get_cert_domain () {
+  openssl x509 -in $1 -noout -subject | tr '/' '\n' | grep CN= | cut -c4-
+}
+
+app=$1; port=$2
+wildcard_ssl=$PLUSHU_ROOT/ssl
+app_dir=$PLUSHU_ROOT/apps/$app
+app_ssl=$app_dir/ssl
+
+certificates=()
+certdomains=()
+
+# For instances where a glob has no matches we want an empty list
+shopt -s nullglob
+
+for crt in "$PLUSHU_ROOT"/ssl/*.crt "$app_dir"/ssl/*.crt; do
+  if [[ -f "${cert%.crt}.key" ]]; then
+    certificates+=("${cert%.crt}")
+    certdomains+=(`get_cert_domain "$cert"`)
+  fi
+done
+
+certlength=${#certificates[@]}
+ssldomains=()
+nossldomains=()
+
+for domain in `"$PLUSHU_ROOT/lib/runhook" app-domains "$app"`; do
+  for (( i=0; i < $certlength; i++ )); do
+    if [[ "$domain" == ${certdomains[$i]} ]]; then
+      ssldomains[$i]+=" $domain"
+      break
+    fi
+  done
+  # If the loop iterates through all certs and finds no matches
+  if [[ "$i" == "$certlength" ]]; then
+    nossldomains+=("$domain")
+  fi
+done
+
+echo 'upstream $app { server 127.0.0.1:$port; }' >"$app_dir"/nginx.conf
+
+for (( i=0; i < $certlength; i++ )); do
+  if [[ -n "${ssldomains[i]}" ]]; then
+    cat <<EOF >>"$app_dir/nginx.conf"
+
+server {
+  listen      [::]:80;
+  listen      80;
+  server_name${ssldomains[i]};
+  return 301 https://\$host\$request_uri;
+}
+
+server {
+  listen      [::]:443 ssl spdy;
+  listen      443 ssl spdy;
+  server_name${ssldomains[i]};
+  ssl_certificate     ${certificates[i]}.crt;
+  ssl_certificate_key ${certificates[i]}.key;
+
+  keepalive_timeout   70;
+  add_header          Alternate-Protocol  443:npn-spdy/2;
+
+  location    / {
+    proxy_pass  http://$app;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host \$http_host;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header X-Forwarded-For \$remote_addr;
+    proxy_set_header X-Forwarded-Port \$server_port;
+    proxy_set_header X-Request-Start \$msec;
+  }
+}
+EOF
+  fi
+done
+
+if [[ -n "${nossldomains[*]}" ]]; then
+  cat <<EOF >>"$app_dir/nginx.conf"
+
+server {
+  listen      [::]:80;
+  listen      80;
+  server_name ${nossldomains[*]};
+  location    / {
+    proxy_pass  http://$APP;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host \$http_host;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header X-Forwarded-For \$remote_addr;
+    proxy_set_header X-Forwarded-Port \$server_port;
+    proxy_set_header X-Request-Start \$msec;
+  }
+}
+EOF
+fi
+
+sudo nginx -s reload
