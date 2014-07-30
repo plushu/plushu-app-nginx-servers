@@ -14,20 +14,6 @@ ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
 ssl_prefer_server_ciphers on;
 EOF
 
-  if [[ -f "$PLUSHU_ROOT/ssl/server.crt" &&
-    -f "$PLUSHU_ROOT/ssl/server.key" ]]; then
-
-    echo "SSL credentials found, adding config file..."
-    cat > "$PLUSHU_ROOT/nginx.conf.d/wildcard-ssl.conf" <<EOF
-ssl_certificate $PLUSHU_ROOT/ssl/server.crt;
-ssl_certificate_key $PLUSHU_ROOT/ssl/server.key;
-EOF
-  else
-    echo "To configure the server for wildcard SSL, place your server.crt and"
-    echo "server.key files in $PLUSHU_ROOT/ssl/, then reinstall this plugin:"
-    echo
-    echo "$ plushu reinstall nginx-app-vhosts"
-  fi
 else
   echo "This plugin depends on the plushu/plushu-nginx plugin."
   echo "Please install that dependency, then reinstall this plugin:"
