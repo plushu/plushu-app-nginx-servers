@@ -5,10 +5,9 @@ get_cert_domain () {
   openssl x509 -in $1 -noout -subject | tr '/' '\n' | grep CN= | cut -c4-
 }
 
-app=$1; port=$2
-wildcard_ssl=$PLUSHU_ROOT/ssl
+app=$1
 app_dir=$PLUSHU_ROOT/apps/$app
-app_ssl=$app_dir/ssl
+port=$(docker port "$(<"$app_dir/proc/web.cid")" 5000 | sed 's/0.0.0.0://')
 
 certificates=()
 certdomains=()
