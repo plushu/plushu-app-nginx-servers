@@ -39,7 +39,7 @@ for domain in `"$PLUSHU_ROOT/lib/runhook" app-domains "$app"`; do
   fi
 done
 
-echo 'upstream $app { server 127.0.0.1:$port; }' >"$app_dir"/nginx.conf
+echo "upstream $app { server 127.0.0.1:$port; }" >"$app_dir"/nginx.conf
 
 hookdirectives=$("$PLUSHU_ROOT/lib/runhook" app-nginx-directives "$app")
 
