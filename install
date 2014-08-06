@@ -3,11 +3,11 @@ set -eo pipefail; [[ $PLUSHU_TRACE ]] && set -x
 
 if [[ -d "$PLUSHU_ROOT/plugins/nginx" ]]; then
   echo "include $PLUSHU_ROOT/apps/*/nginx.conf;" \
-    >"$PLUSHU_ROOT/nginx.conf.d/apps.conf"
+    >"$PLUSHU_ROOT/nginx/http/apps.conf"
 
   # Write some sensible SSL configuration directives
-  if [[ ! -f "$PLUSHU_ROOT/nginx.conf.d/ssl.conf" ]]; then
-    cat > "$PLUSHU_ROOT/nginx.conf.d/ssl.conf" <<EOF
+  if [[ ! -f "$PLUSHU_ROOT/nginx/http/ssl.conf" ]]; then
+    cat > "$PLUSHU_ROOT/nginx/http/ssl.conf" <<EOF
 ssl_session_cache shared:SSL:20m;
 ssl_session_timeout 10m;
 
