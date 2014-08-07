@@ -25,7 +25,7 @@ certdomains=()
 shopt -s nullglob
 
 for crt in "$PLUSHU_ROOT"/ssl/*.crt "$app_dir"/ssl/*.crt; do
-  if [[ -f "${cert%.crt}.key" ]]; then
+  if [[ -e "${cert%.crt}.key" ]]; then
     certificates+=("${cert%.crt}")
     certdomains+=(`get_cert_domain "$cert"`)
   fi
