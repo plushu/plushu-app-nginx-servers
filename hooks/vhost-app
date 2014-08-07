@@ -2,7 +2,16 @@
 set -eo pipefail; [[ $PLUSHU_TRACE ]] && set -x
 
 get_cert_domain () {
-  openssl x509 -in $1 -noout -subject | tr '/' '\n' | grep CN= | cut -c4-
+  # If we can read the certificate
+  if [[ -r "$1" ]]; then
+    # Read the domain from the certificate
+    openssl x509 -in "$1" -noout -subject | tr '/' '\n' | grep CN= | cut -c4-
+  # If we're not allowed to read the certificate
+  else
+    # Just assume the filename is the domain name
+    basename=${1##*/}
+    echo "${basename%.crt}"
+  fi
 }
 
 app=$1
