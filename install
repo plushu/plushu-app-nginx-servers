@@ -2,7 +2,7 @@
 set -eo pipefail; [[ $PLUSHU_TRACE ]] && set -x
 
 if [[ -d "$PLUSHU_ROOT/plugins/nginx" ]]; then
-  echo "include $PLUSHU_ROOT/apps/*/nginx.conf;" \
+  printf '%s\n' "include $PLUSHU_ROOT/apps/*/nginx.conf;" \
     >"$PLUSHU_ROOT/nginx/http/apps.conf"
 
   # Write some sensible SSL configuration directives

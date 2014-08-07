@@ -10,7 +10,7 @@ get_cert_domain () {
   else
     # Just assume the filename is the domain name
     basename=${1##*/}
-    echo "${basename%.crt}"
+    printf '%s\n' "${basename%.crt}"
   fi
 }
 
@@ -48,7 +48,8 @@ for domain in `"$PLUSHU_ROOT/lib/runhook" app-domains "$app"`; do
   fi
 done
 
-echo "upstream $app { server 127.0.0.1:$port; }" >"$app_dir"/nginx.conf
+printf '%s\n' "upstream $app { server 127.0.0.1:$port; }" \
+  >"$app_dir"/nginx.conf
 
 hookdirectives=$("$PLUSHU_ROOT/lib/runhook" app-nginx-directives "$app")
 
@@ -85,8 +86,9 @@ server {
     proxy_set_header X-Request-Start \$msec;
   }
 EOF
-  [[ -n "$hookdirectives" ]] && echo "$hookdirectives" >>"$app_dir/nginx.conf"
-  echo "}" >>"$app_dir/nginx.conf"
+  [[ -n "$hookdirectives" ]] &&
+    printf '%s\n' "$hookdirectives" >>"$app_dir/nginx.conf"
+  printf '}\n' >>"$app_dir/nginx.conf"
   fi
 done
 
@@ -109,8 +111,9 @@ server {
     proxy_set_header X-Request-Start \$msec;
   }
 EOF
-  [[ -n "$hookdirectives" ]] && echo "$hookdirectives" >>"$app_dir/nginx.conf"
-  echo "}" >>"$app_dir/nginx.conf"
+  [[ -n "$hookdirectives" ]] &&
+    printf '%s\n' "$hookdirectives" >>"$app_dir/nginx.conf"
+  printf '}\n' >>"$app_dir/nginx.conf"
 fi
 
 sudo nginx -s reload
