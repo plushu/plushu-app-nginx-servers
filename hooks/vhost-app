@@ -21,6 +21,7 @@ get_cert_regex () {
     # Just assume the filename is the domain name(s)
     basename=${1##*/}
     certdomains="${basename%.crt}"
+    certdomains="${certdomains/ANY/*}"
   fi
 
   # Convert comma-separated list of domains to regular expression
