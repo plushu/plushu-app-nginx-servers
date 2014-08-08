@@ -5,7 +5,7 @@ get_cert_regex () {
   local certdomains
 
   # If we can read the certificate
-  if [[ -r "$1" ]]; then
+  if command -v openssl >/dev/null 2>&1 && [[ -r "$1" ]]; then
 
     # Read the domain from the certificate
     certdomains=$(openssl x509 -in "$1" -noout -subject |
@@ -16,7 +16,7 @@ get_cert_regex () {
       sed -nr '/^ {12}X509v3 Subject Alternative Name/{n
         s/(^|,) *DNS:/,/g; s/(^|,) [^,]*//gp}')
 
-  # If we're not allowed to read the certificate
+  # If we can't read the certificate
   else
     # Just assume the filename is the domain name(s)
     basename=${1##*/}
