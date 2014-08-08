@@ -1,17 +1,30 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $PLUSHU_TRACE ]] && set -x
 
-get_cert_domain () {
+get_cert_regex () {
+  local certdomains
+
   # If we can read the certificate
   if [[ -r "$1" ]]; then
+
     # Read the domain from the certificate
-    openssl x509 -in "$1" -noout -subject | tr '/' '\n' | grep CN= | cut -c4-
+    certdomains=$(openssl x509 -in "$1" -noout -subject |
+      tr '/' '\n' | grep CN= | cut -c4-)
+
+    # Read any alternative names from the certificate
+    certdomains+=$(openssl x509 -in "$1" -noout -text |
+      sed -nr '/^ {12}X509v3 Subject Alternative Name/{n
+        s/(^|,) *DNS:/,/g; s/(^|,) [^,]*//gp}')
+
   # If we're not allowed to read the certificate
   else
-    # Just assume the filename is the domain name
+    # Just assume the filename is the domain name(s)
     basename=${1##*/}
-    printf '%s\n' "${basename%.crt}"
+    certdomains="${basename%.crt}"
   fi
+
+  # Convert comma-separated list of domains to regular expression
+  sed 's/\./\./g;s/\*/[^.]*/g;s/,/|/g' <<<"$certdomains"
 }
 
 app=$1
@@ -19,15 +32,15 @@ app_dir=$PLUSHU_ROOT/apps/$app
 port=$(docker port "$(<"$app_dir/proc/web.cid")" 5000 | sed 's/0.0.0.0://')
 
 certificates=()
-certdomains=()
+certregexes=()
 
 # For instances where a glob has no matches we want an empty list
 shopt -s nullglob
 
-for crt in "$PLUSHU_ROOT"/ssl/*.crt "$app_dir"/ssl/*.crt; do
+for cert in "$PLUSHU_ROOT"/ssl/*.crt "$app_dir"/ssl/*.crt; do
   if [[ -e "${cert%.crt}.key" ]]; then
     certificates+=("${cert%.crt}")
-    certdomains+=(`get_cert_domain "$cert"`)
+    certregexes+=(`get_cert_regex "$cert"`)
   fi
 done
 
@@ -37,7 +50,7 @@ nossldomains=()
 
 for domain in `"$PLUSHU_ROOT/lib/runhook" app-domains "$app"`; do
   for (( i=0; i < $certlength; i++ )); do
-    if [[ "$domain" == ${certdomains[$i]} ]]; then
+    if [[ "$domain" =~ ${certregexes[$i]} ]]; then
       ssldomains[$i]+=" $domain"
       break
     fi
