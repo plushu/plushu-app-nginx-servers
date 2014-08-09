@@ -49,7 +49,7 @@ certlength=${#certificates[@]}
 ssldomains=()
 nossldomains=()
 
-for domain in `"$PLUSHU_ROOT/lib/runhook" app-domains "$app"`; do
+for domain in `"$PLUSHU_ROOT/lib/plushook" app-domains "$app"`; do
   for (( i=0; i < $certlength; i++ )); do
     if [[ "$domain" =~ ${certregexes[$i]} ]]; then
       ssldomains[$i]+=" $domain"
@@ -65,7 +65,7 @@ done
 printf '%s\n' "upstream $app { server 127.0.0.1:$port; }" \
   >"$app_dir"/nginx.conf
 
-hookdirectives=$("$PLUSHU_ROOT/lib/runhook" app-nginx-directives "$app")
+hookdirectives=$("$PLUSHU_ROOT/lib/plushook" app-nginx-directives "$app")
 
 for (( i=0; i < $certlength; i++ )); do
   if [[ -n "${ssldomains[i]}" ]]; then
