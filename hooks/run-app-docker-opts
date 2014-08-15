@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -eo pipefail; [[ -n "$PLUSHU_TRACE" ]] && set -x
-
-printf '%s\n' '-p 5000'
