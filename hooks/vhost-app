@@ -30,7 +30,7 @@ get_cert_regex () {
 
 app=$1
 app_dir=$PLUSHU_ROOT/apps/$app
-app_ip=$(docker --format='{{.NetworkSettings.IPAddress}}' \
+app_ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' \
   "$(<"$app_dir/proc/web.cid")")
 
 certificates=()
