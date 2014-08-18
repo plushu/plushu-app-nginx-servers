@@ -40,7 +40,7 @@ certregexes=()
 # For instances where a glob has no matches we want an empty list
 shopt -s nullglob
 
-for cert in "$PLUSHU_ROOT"/ssl/*.crt; do
+for cert in "$PLUSHU_ROOT"/ssl/*.crt "$PLUSHU_ROOT"/ssl/$app/*.crt; do
   if [[ -e "${cert%.crt}.key" ]]; then
     # get just the certificate name
     cert==${cert#$PLUSHU_ROOT/ssl/}
