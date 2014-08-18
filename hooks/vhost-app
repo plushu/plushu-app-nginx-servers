@@ -30,6 +30,7 @@ get_cert_regex () {
 
 app=$1
 app_dir=$PLUSHU_ROOT/apps/$app
+app_conf=$PLUSHU_ROOT/nginx/http/apps/$app/vhost.conf
 app_ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' \
   "$(<"$app_dir/proc/web.cid")")
 
@@ -39,9 +40,12 @@ certregexes=()
 # For instances where a glob has no matches we want an empty list
 shopt -s nullglob
 
-for cert in "$PLUSHU_ROOT"/ssl/*.crt "$app_dir"/ssl/*.crt; do
+for cert in "$PLUSHU_ROOT"/ssl/*.crt; do
   if [[ -e "${cert%.crt}.key" ]]; then
-    certificates+=("${cert%.crt}")
+    # get just the certificate name
+    cert==${cert#$PLUSHU_ROOT/ssl/}
+    # describe the certificate location relative to the app config
+    certificates+=("../../../../ssl/${cert%.crt}")
     certregexes+=(`get_cert_regex "$cert"`)
   fi
 done
@@ -63,13 +67,13 @@ for domain in `"$PLUSHU_ROOT/lib/plushook" app-domains "$app"`; do
   fi
 done
 
-printf '%s\n' "upstream $app { server $app_ip:5000; }" >"$app_dir"/nginx.conf
+printf '%s\n' "upstream $app { server $app_ip:5000; }" >"$app_conf"
 
 hookdirectives=$("$PLUSHU_ROOT/lib/plushook" app-nginx-directives "$app")
 
 for (( i=0; i < $certlength; i++ )); do
   if [[ -n "${ssldomains[i]}" ]]; then
-    cat <<EOF >>"$app_dir/nginx.conf"
+    cat <<EOF >>"$app_conf"
 
 server {
   listen      [::]:80;
@@ -101,13 +105,13 @@ server {
   }
 EOF
   [[ -n "$hookdirectives" ]] &&
-    printf '%s\n' "$hookdirectives" >>"$app_dir/nginx.conf"
-  printf '}\n' >>"$app_dir/nginx.conf"
+    printf '%s\n' "$hookdirectives" >>"$app_conf"
+  printf '}\n' >>"$app_conf"
   fi
 done
 
 if [[ -n "${nossldomains[*]}" ]]; then
-  cat <<EOF >>"$app_dir/nginx.conf"
+  cat <<EOF >>"$app_conf"
 
 server {
   listen      [::]:80;
@@ -126,8 +130,8 @@ server {
   }
 EOF
   [[ -n "$hookdirectives" ]] &&
-    printf '%s\n' "$hookdirectives" >>"$app_dir/nginx.conf"
-  printf '}\n' >>"$app_dir/nginx.conf"
+    printf '%s\n' "$hookdirectives" >>"$app_conf"
+  printf '}\n' >>"$app_conf"
 fi
 
 sudo nginx -s reload
