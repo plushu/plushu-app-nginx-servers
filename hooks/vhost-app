@@ -53,8 +53,10 @@ done
 certlength=${#certificates[@]}
 ssldomains=()
 nossldomains=()
+domain_count=0
 
 for domain in `"$PLUSHU_ROOT/lib/plushook" app-domains "$app"`; do
+  domain_count=$((domain_count+1))
   for (( i=0; i < $certlength; i++ )); do
     if [[ "$domain" =~ ${certregexes[$i]} ]]; then
       ssldomains[$i]+=" $domain"
@@ -67,13 +69,15 @@ for domain in `"$PLUSHU_ROOT/lib/plushook" app-domains "$app"`; do
   fi
 done
 
-printf '%s\n' "upstream $app { server $app_ip:5000; }" >"$app_conf"
+if [[ domain_count != 0 ]]; then
+  mkdir -p "$PLUSHU_ROOT/nginx/http/apps/$app"
+  printf '%s\n' "upstream $app { server $app_ip:5000; }" >"$app_conf"
 
-hookdirectives=$("$PLUSHU_ROOT/lib/plushook" app-nginx-directives "$app")
+  hookdirectives=$("$PLUSHU_ROOT/lib/plushook" app-nginx-directives "$app")
 
-for (( i=0; i < $certlength; i++ )); do
-  if [[ -n "${ssldomains[i]}" ]]; then
-    cat <<EOF >>"$app_conf"
+  for (( i=0; i < $certlength; i++ )); do
+    if [[ -n "${ssldomains[i]}" ]]; then
+      cat <<EOF >>"$app_conf"
 
 server {
   listen      [::]:80;
@@ -104,14 +108,14 @@ server {
     proxy_set_header X-Request-Start \$msec;
   }
 EOF
-  [[ -n "$hookdirectives" ]] &&
-    printf '%s\n' "$hookdirectives" >>"$app_conf"
-  printf '}\n' >>"$app_conf"
-  fi
-done
+    [[ -n "$hookdirectives" ]] &&
+      printf '%s\n' "$hookdirectives" >>"$app_conf"
+    printf '}\n' >>"$app_conf"
+    fi
+  done
 
-if [[ -n "${nossldomains[*]}" ]]; then
-  cat <<EOF >>"$app_conf"
+  if [[ -n "${nossldomains[*]}" ]]; then
+    cat <<EOF >>"$app_conf"
 
 server {
   listen      [::]:80;
@@ -129,9 +133,10 @@ server {
     proxy_set_header X-Request-Start \$msec;
   }
 EOF
-  [[ -n "$hookdirectives" ]] &&
-    printf '%s\n' "$hookdirectives" >>"$app_conf"
-  printf '}\n' >>"$app_conf"
-fi
+    [[ -n "$hookdirectives" ]] &&
+      printf '%s\n' "$hookdirectives" >>"$app_conf"
+    printf '}\n' >>"$app_conf"
+  fi
 
-sudo nginx -s reload
+  sudo nginx -s reload
+fi
