@@ -138,5 +138,5 @@ EOF
     printf '}\n' >>"$app_conf"
   fi
 
-  sudo nginx -s reload
+  "$PLUSHU_ROOT/lib/plushook" reload-nginx
 fi
