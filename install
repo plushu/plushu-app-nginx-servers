@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ -n "$PLUSHU_TRACE" ]] && set -x
 
-if [[ -d "$PLUSHU_ROOT/plugins/nginx" ]]; then
-  printf '%s\n' "include http/apps/*/*.conf;" \
-    >"$PLUSHU_ROOT/nginx/http/apps.conf"
+mkdir -p "$PLUSHU_ROOT/nginx/http/apps"
 
-  # Write some sensible SSL configuration directives
-  if [[ ! -f "$PLUSHU_ROOT/nginx/http/ssl.conf" ]]; then
-    cat > "$PLUSHU_ROOT/nginx/http/ssl.conf" <<EOF
+printf '%s\n' "include http/apps/*/*.conf;" \
+  >"$PLUSHU_ROOT/nginx/http/apps.conf"
+
+# Write some sensible SSL configuration directives
+if [[ ! -f "$PLUSHU_ROOT/nginx/http/ssl.conf" ]]; then
+  cat > "$PLUSHU_ROOT/nginx/http/ssl.conf" <<EOF
 ssl_session_cache shared:SSL:20m;
 ssl_session_timeout 10m;
 
@@ -15,11 +16,4 @@ ssl_ciphers EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:
 ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
 ssl_prefer_server_ciphers on;
 EOF
-  fi
-else
-  echo "This plugin depends on the plushu/plushu-nginx plugin."
-  echo "Please install that dependency, then reinstall this plugin:"
-  echo
-  echo "# plushu install nginx"
-  echo "# plushu reinstall nginx-app-vhosts"
 fi
