@@ -45,7 +45,7 @@ for cert in "$PLUSHU_ROOT"/ssl/*.crt "$PLUSHU_ROOT"/ssl/$app/*.crt; do
     # get just the certificate name
     cert==${cert#$PLUSHU_ROOT/ssl/}
     # describe the certificate location relative to the app config
-    certificates+=("../../../../ssl/${cert%.crt}")
+    certificates+=("ssl/${cert%.crt}")
     certregexes+=(`get_cert_regex "$cert"`)
   fi
 done
