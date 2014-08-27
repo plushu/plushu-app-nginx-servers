@@ -7,5 +7,5 @@ printf '%s\n' "include http/apps/*/*.conf;" \
   >"$PLUSHU_ROOT/nginx/http/apps.conf"
 
 if [[ "$EUID" == 0 ]]; then
-  chown -R plushu "$PLUSHU_ROOT/nginx/http"
+  chown -R "$PLUSHU_USER" "$PLUSHU_ROOT/nginx/http"
 fi
