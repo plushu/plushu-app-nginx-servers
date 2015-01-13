@@ -108,8 +108,9 @@ server {
     proxy_set_header X-Request-Start \$msec;
   }
 EOF
-    [[ -n "$hookdirectives" ]] &&
+    if [[ -n "$hookdirectives" ]]; then
       printf '%s\n' "$hookdirectives" >>"$app_conf"
+    fi
     printf '}\n' >>"$app_conf"
     fi
   done
@@ -133,8 +134,9 @@ server {
     proxy_set_header X-Request-Start \$msec;
   }
 EOF
-    [[ -n "$hookdirectives" ]] &&
+    if [[ -n "$hookdirectives" ]]; then
       printf '%s\n' "$hookdirectives" >>"$app_conf"
+    fi
     printf '}\n' >>"$app_conf"
   fi
 
