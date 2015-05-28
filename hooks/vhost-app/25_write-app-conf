@@ -30,9 +30,8 @@ get_cert_regex () {
 
 app=$1
 app_dir=$PLUSHU_APPS_DIR/$app
-app_conf=$PLUSHU_ROOT/nginx/http/apps/$app/23_vhost.conf
-app_ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' \
-  "$(<"$app_dir/proc/web.cid")")
+app_conf_dir=$PLUSHU_ROOT/nginx/http/apps/$app
+app_conf=$app_conf_dir/25_servers.conf
 
 certificates=()
 certregexes=()
@@ -70,8 +69,10 @@ for domain in `"$PLUSHU_ROOT/lib/plushook" app-domains "$app"`; do
 done
 
 if [[ domain_count != 0 ]]; then
-  mkdir -p "$PLUSHU_ROOT/nginx/http/apps/$app"
-  printf '%s\n' "upstream $app { server $app_ip:5000; }" >"$app_conf"
+  mkdir -p "$app_conf_dir"
+
+  # empty the conf file so the new servers can be appended
+  > "$app_conf"
 
   hookdirectives=$("$PLUSHU_ROOT/lib/plushook" app-nginx-directives "$app")
 

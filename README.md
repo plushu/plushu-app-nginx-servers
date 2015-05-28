@@ -1,13 +1,25 @@
-# plushu-nginx-app-vhosts
+# plushu-app-nginx-servers
 
-This plugin connects apps to the host interface via Nginx virtual hosts. It
-requires [plushu/plushu-nginx][] to be installed and it makes apps available
-on domains specified by plugins like [plushu/plushu-domains][] or
-[app-name-domain][plushu/plushu-app-name-domain].
+This plugin creates a configuration specifying Nginx servers for an app, on
+domains specified by plugins like [plushu/plushu-domains][] or
+[plushu/plushu-app-name-domain][]. It hooks these domains up to the upstream
+location specified by a configuration from a plugin like
+[plushu/plushu-app-nginx-upstream-docker][].
 
-[plushu/plushu-nginx]: https://github.com/plushu/plushu-nginx
+Assuming app Nginx configurations have been integrated into the main Nginx
+configuration, ie. as part of the installation of the
+[plushu/plushu-nginx-apps][] plugin (which also manages configurations in the
+event of an app fork/rename/destroy), this configuration will proxy requests
+to apps by listening on the host interface via the
+[plushu/plushu-nginx-container][] (or the legacy host-based
+[plushu/plushu-nginx][]) plugin.
+
 [plushu/plushu-domains]: https://github.com/plushu/plushu-domains
 [plushu/plushu-app-name-domain]: https://github.com/plushu/plushu-app-name-domain
+[plushu/plushu-app-nginx-upstream-docker]: https://github.com/plushu/plushu-app-nginx-upstream-docker
+[plushu/plushu-nginx-apps]: https://github.com/plushu/plushu-nginx-apps
+[plushu/plushu-nginx-container]: https://github.com/plushu/plushu-nginx-container
+[plushu/plushu-nginx]: https://github.com/plushu/plushu-nginx
 
 ## SSL / TLS
 

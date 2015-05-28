@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-set -eo pipefail; [[ -n "$PLUSHU_TRACE" ]] && set -x
-
-# Reload the Nginx configuration to unload the destroyed app's nginx.conf
-"$PLUSHU_ROOT/lib/plushook" reload-nginx
