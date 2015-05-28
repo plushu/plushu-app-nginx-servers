@@ -13,8 +13,8 @@ on domains specified by plugins like [plushu/plushu-domains][] or
 
 This plugin automatically sets domains to be HTTPS-only (redirecting on plain
 HTTP requests) when there is an SSL certificate and key available for that
-domain. It checks certificates in the "ssl" directories within $PLUSHU_ROOT and
-the app's directory (under $PLUSHU_APPS_DIR). At some point in the future,
-it's planned to have a "certs" plugin for managing these certificates; for now,
-they just have to be added to the appropriate directory via other means (such
-as logging in as root and/or uploading them via sftp).
+domain. It checks certificates in the "ssl" directories within $PLUSHU_ROOT
+(and/or a subdiectory with the app's name within that directory). At some point
+in the future, it's planned to have a "certs" plugin for managing these
+certificates; for now, they just have to be added to the appropriate directory
+via other means (such as logging in as root and/or uploading them via sftp).
