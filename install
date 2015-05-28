@@ -4,7 +4,7 @@ set -eo pipefail; [[ -n "$PLUSHU_TRACE" ]] && set -x
 mkdir -p "$PLUSHU_ROOT/nginx/http/apps"
 
 printf '%s\n' "include http/apps/*/*.conf;" \
-  >"$PLUSHU_ROOT/nginx/http/apps.conf"
+  >"$PLUSHU_ROOT/nginx/http/25_apps.conf"
 
 if [[ "$EUID" == 0 ]]; then
   chown -R "$PLUSHU_USER:" "$PLUSHU_ROOT/nginx/http"
