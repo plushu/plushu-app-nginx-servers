@@ -14,7 +14,7 @@ get_cert_regex () {
     # Read any alternative names from the certificate
     certdomains+=$(openssl x509 -in "$1" -noout -text |
       sed -nr '/^ {12}X509v3 Subject Alternative Name/{n
-        s/(^|,) *DNS:/,/g; s/(^|,) [^,]*//gp}')
+        s/(^|,) *DNS:/,/g; s/(^|,) [^,]*//g;p}')
 
   # If we can't read the certificate
   else
